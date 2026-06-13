@@ -904,14 +904,41 @@
     if (e.target === this) closeModal();
   });
 
-  function submitProductForm(e) {
+  async function submitProductForm(e) {
     e.preventDefault();
+    const btn = document.getElementById('modal-submit-btn');
     const type = document.getElementById('modal-type').value;
-    document.getElementById('modal-form-wrap').style.display = 'none';
-    document.getElementById('modal-success-msg').textContent =
-      type === 'interest' ? 'Got it — we\'ll be in touch!' : 'Query received!';
-    document.getElementById('modal-success').style.display = 'block';
-    setTimeout(closeModal, 2800);
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+    const payload = {
+      name: document.getElementById('modal-name').value,
+      contact: document.getElementById('modal-contact').value,
+      product: document.getElementById('modal-product').value,
+      enquiry_type: type,
+      message: document.getElementById('modal-message').value || ''
+    };
+    try {
+      const res = await fetch('https://formspree.io/f/xqeoyjvo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        document.getElementById('modal-form-wrap').style.display = 'none';
+        document.getElementById('modal-success-msg').textContent =
+          type === 'interest' ? 'Got it — we\'ll be in touch!' : 'Query received!';
+        document.getElementById('modal-success').style.display = 'block';
+        setTimeout(closeModal, 2800);
+      } else {
+        btn.textContent = type === 'interest' ? 'Notify me →' : 'Send query →';
+        btn.disabled = false;
+        alert('Something went wrong. Please email us at siltechelectronics@gmail.com');
+      }
+    } catch (err) {
+      btn.textContent = type === 'interest' ? 'Notify me →' : 'Send query →';
+      btn.disabled = false;
+      alert('Network error. Please try again.');
+    }
   }
 </script>
 
